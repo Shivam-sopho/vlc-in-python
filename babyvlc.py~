@@ -5,6 +5,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 gi.require_version('GdkX11', '3.0')
 from gi.repository import GdkX11
+from threading import Timer
 
 import vlc
 MRL = ""
@@ -62,11 +63,15 @@ class ApplicationWindow(Gtk.Window):
         self.player.stop()
         self.is_player_active = False
         self.play_button.set_image(self.play_image)
-
+   
     def toggle_play_pause(self, widget, data=None):
         """
         Handler for the play/pause button
         """
+        def wait():
+            self.player.pause()
+            self.is_paused = True
+
         if self.is_player_active == False and self.is_paused == False:
             self.player.play()
             self.play_button.set_image(self.pause_image)
@@ -74,18 +79,13 @@ class ApplicationWindow(Gtk.Window):
             print("1st")
 
         elif self.is_player_active == True and self.is_paused == True:
-            win = Gtk.Window()
-            win.maximize()
+#            win = Gtk.Window()
+#            win.maximize()
             self.player.play()
             self.play_button.set_image(self.pause_image)
             self.is_paused = False
-            playtime = 0
-            while playtime!=5:
-                time.sleep(60)
-                playtime = playtime+1
-            self.player.pause()
-            self.is_paused = True
-            self.play_button.set_image(self.play_image)
+            t = Timer(10,wait)
+            t.start()
             
                 
         elif self.is_player_active == True and self.is_paused == False:
@@ -115,8 +115,6 @@ if __name__ == '__main__':
 
         print("Please Enter the (relative)location of the Video to be played")
         sys.exit(1)
-    elif len(sys.argv)!=1:
-        print("Please Enter the Correct file")
     else:
         MRL = sys.argv[1]
         window = ApplicationWindow()
